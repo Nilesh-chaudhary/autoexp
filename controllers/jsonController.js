@@ -193,40 +193,31 @@ class jsonController {
 
   static getDateWiseTotal = async (req, res) => {
     try {
-      // Query the database to get all transactions
-      const transactions = await JsonModel.find();
-      console.log("transactions: ", transactions);
-      // Initialize empty objects for debit and credit
-      const debitSummary = {};
-      const creditSummary = {};
+      // Fetch all transactions from the database
+      const allTransactions = await JsonModel.find();
 
-      // Loop through each transaction and categorize them into debit or credit
-      transactions.forEach((transaction) => {
-        const { amount, date, transaction_type } = transaction;
+      // Separate transactions into debit and credit based on transaction_type
+      const debitTransactions = allTransactions.filter(
+        (transaction) => transaction.transaction_type === "debit"
+      );
+      const creditTransactions = allTransactions.filter(
+        (transaction) => transaction.transaction_type === "credit"
+      );
 
-        // Extract the date in the format "DD/MM/YY" from the transaction date
-        const formattedDate = new Date(date).toLocaleDateString("en-GB");
+      // Extract relevant fields for the output
+      const mapTransactionFields = (transactions) =>
+        transactions.map(({ date, amount }) => ({ date, amount }));
 
-        // Update the summary objects based on category and date
-        if (!transaction_type || !formattedDate) {
-          console.error("Invalid transaction data:", transaction);
-        } else {
-          if (transaction_type === "debit") {
-            debitSummary[formattedDate] =
-              (debitSummary[formattedDate] || 0) + Math.abs(amount);
-          } else {
-            creditSummary[formattedDate] =
-              (creditSummary[formattedDate] || 0) + Math.abs(amount);
-          }
-          console.log("creditSum", creditSummary);
-        }
-      });
+      // Create the desired output
+      const output = {
+        debit: mapTransactionFields(debitTransactions),
+        credit: mapTransactionFields(creditTransactions),
+      };
 
-      // Return the summary objects
-      return res.json({ debit: debitSummary, credit: creditSummary });
+      res.json(output);
     } catch (error) {
-      console.error("Error fetching transactions:", error);
-      throw error;
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
     }
   };
 }
