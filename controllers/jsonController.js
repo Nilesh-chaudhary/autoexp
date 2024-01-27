@@ -124,13 +124,14 @@ class jsonController {
           },
         },
       ]);
+      const creditTotal = total.find((item) => item._id === "credit") || {
+        total: 0,
+      };
+      const debitTotal = total.find((item) => item._id === "debit") || {
+        total: 0,
+      };
 
-      res.json({
-        status: "success",
-        data: {
-          total,
-        },
-      });
+      res.json({ credit: creditTotal.total, debit: debitTotal.total });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Something went wrong" });
