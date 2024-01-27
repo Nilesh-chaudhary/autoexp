@@ -158,16 +158,14 @@ class jsonController {
       if (!startDate && !endDate) {
         const data = await JsonModel.find();
         return res.json({ data });
-      }
-      else if(!startDate){
+      } else if (!startDate) {
         const data = await JsonModel.find({
           date: {
             $lte: endDate,
           },
         });
         return res.json({ data });
-      }
-      else if(!endDate){
+      } else if (!endDate) {
         const data = await JsonModel.find({
           date: {
             $gte: startDate,

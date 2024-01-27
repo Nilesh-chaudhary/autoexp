@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const express = require("express");
 const router = express.Router();
 const userRouter = require("./userRoutes.js");
-const jsonRouter = require("./jsonRoutes.js");
+const jsonRouter = require("./jsonroutes.js");
 
 router.get("/", (req, res) => {
   res.send("Welcome to exptracker");
