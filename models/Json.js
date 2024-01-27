@@ -16,7 +16,6 @@ const jsonSchema = new mongoose.Schema(
     },
     transaction_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Comment",
     },
   },
   {
