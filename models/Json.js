@@ -7,8 +7,8 @@ const jsonSchema = new mongoose.Schema(
       required: false,
     },
     date: {
-      type: String,
-      required: false,
+      type: Date,
+      required: true,
     },
     transaction_type: {
       type: String, // Assuming category is a string, you can adjust the type accordingly

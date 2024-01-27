@@ -79,13 +79,27 @@ class jsonController {
           const transaction_id = txnObj.transaction_id;
           // const description = chatGPTResponse.description;
           // const transaction_id = chatGPTResponse.transaction_id;
-          if (transaction_type == null) {
+          if (transaction_type == "" || transaction_type == null) {
             transaction_type = "credit";
+          }
+          let parsedDate;
+          if (date) {
+            const parts = date.split("-"); // Split the string into day, month, and year parts
+            console.log("parts", parts);
+            const mongoDateFormat = `20${parts[2]}-${parts[1]}-${parts[0]}`; // Rearrange the parts into "YYYY/MM/DD" format
+
+            parsedDate = new Date(mongoDateFormat);
+
+            // Now you can use the parsedDate in your MongoDB field
+            console.log(parsedDate);
+          } else {
+            parsedDate = new Date();
+            console.log(parsedDate);
           }
 
           const Json = new JsonModel({
             amount,
-            date,
+            date: parsedDate,
             account_number,
             transaction_type,
             person_name,
@@ -136,6 +150,41 @@ class jsonController {
       console.error(error);
       res.status(500).json({ error: "Something went wrong" });
     }
+  };
+
+  static fetchAllTransactions = async (req, res) => {
+    try {
+      const { startDate, endDate } = req.query;
+      if (!startDate && !endDate) {
+        const data = await JsonModel.find();
+        return res.json({ data });
+      }
+      else if(!startDate){
+        const data = await JsonModel.find({
+          date: {
+            $lte: endDate,
+          },
+        });
+        return res.json({ data });
+      }
+      else if(!endDate){
+        const data = await JsonModel.find({
+          date: {
+            $gte: startDate,
+          },
+        });
+        return res.json({ data });
+      }
+      const data = await JsonModel.find({
+        date: {
+          $gte: startDate,
+          $lte: endDate,
+        },
+      });
+
+      console.log("Data:", data);
+      res.json({ data });
+    } catch (err) {}
   };
 }
 

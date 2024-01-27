@@ -6,5 +6,5 @@ const jsonController = require("../controllers/jsonController.js");
 // PUBLIC ROUTE
 router.post("/json", jsonController.createJson);
 router.get("/total", jsonController.getTotal);
-
+router.get("/fetchAll", jsonController.fetchAllTransactions);
 module.exports = router;
