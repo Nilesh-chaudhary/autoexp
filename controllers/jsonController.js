@@ -50,8 +50,6 @@ class jsonController {
             text.indexOf("{"),
             text.lastIndexOf("}") + 1
           );
-          console.log(jsontxt);
-          //   const { transaction_message } = req.body;
           // if (!transaction_message) {
           //   return res
           //     .status(400)
@@ -191,6 +189,45 @@ class jsonController {
       console.log("Data:", data);
       res.json({ data });
     } catch (err) {}
+  };
+
+  static getDateWiseTotal = async (req, res) => {
+    try {
+      // Query the database to get all transactions
+      const transactions = await JsonModel.find();
+      console.log("transactions: ", transactions);
+      // Initialize empty objects for debit and credit
+      const debitSummary = {};
+      const creditSummary = {};
+
+      // Loop through each transaction and categorize them into debit or credit
+      transactions.forEach((transaction) => {
+        const { amount, date, transaction_type } = transaction;
+
+        // Extract the date in the format "DD/MM/YY" from the transaction date
+        const formattedDate = new Date(date).toLocaleDateString("en-GB");
+
+        // Update the summary objects based on category and date
+        if (!transaction_type || !formattedDate) {
+          console.error("Invalid transaction data:", transaction);
+        } else {
+          if (transaction_type === "debit") {
+            debitSummary[formattedDate] =
+              (debitSummary[formattedDate] || 0) + Math.abs(amount);
+          } else {
+            creditSummary[formattedDate] =
+              (creditSummary[formattedDate] || 0) + Math.abs(amount);
+          }
+          console.log("creditSum", creditSummary);
+        }
+      });
+
+      // Return the summary objects
+      return res.json({ debit: debitSummary, credit: creditSummary });
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+      throw error;
+    }
   };
 }
 
