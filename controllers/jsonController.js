@@ -79,6 +79,7 @@ class jsonController {
           const transaction_id = txnObj.transaction_id;
           // const description = chatGPTResponse.description;
           // const transaction_id = chatGPTResponse.transaction_id;
+
           if (transaction_type == "" || transaction_type == null) {
             transaction_type = "credit";
           }
@@ -107,14 +108,21 @@ class jsonController {
           });
           await Json.save();
 
-          return txnObj;
+          return {
+            amount,
+            date: parsedDate,
+            account_number,
+            transaction_type,
+            person_name,
+            transaction_id,
+          };
         }
       );
-
+      const results = await Promise.all(result);
       res.send({
         status: "expense created successfully",
         data: {
-          result,
+          results,
         },
       });
     } catch (error) {
