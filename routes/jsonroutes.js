@@ -5,5 +5,6 @@ const jsonController = require("../controllers/jsonController.js");
 
 // PUBLIC ROUTE
 router.post("/json", jsonController.createJson);
+router.get("/total", jsonController.getTotal);
 
 module.exports = router;

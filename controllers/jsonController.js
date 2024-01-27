@@ -74,11 +74,14 @@ class jsonController {
           const amount = txnObj.amount;
           const date = txnObj.date;
           const account_number = txnObj.account_number;
-          const transaction_type = txnObj.transaction_type;
+          let transaction_type = txnObj.transaction_type;
           const person_name = txnObj.person_name;
           const transaction_id = txnObj.transaction_id;
           // const description = chatGPTResponse.description;
           // const transaction_id = chatGPTResponse.transaction_id;
+          if (transaction_type == null) {
+            transaction_type = "credit";
+          }
 
           const Json = new JsonModel({
             amount,
@@ -103,6 +106,34 @@ class jsonController {
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Fck" });
+    }
+  };
+
+  // get total of amounts of all transactions
+  static getTotal = async (req, res) => {
+    try {
+      const total = await JsonModel.aggregate([
+        {
+          $group: {
+            _id: "$transaction_type",
+            total: {
+              $sum: {
+                $toDouble: "$amount",
+              },
+            },
+          },
+        },
+      ]);
+
+      res.json({
+        status: "success",
+        data: {
+          total,
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Something went wrong" });
     }
   };
 }
