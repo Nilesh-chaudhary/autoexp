@@ -85,7 +85,10 @@ class jsonController {
           if (date) {
             const parts = date.split("-"); // Split the string into day, month, and year parts
             console.log("parts", parts);
-            const mongoDateFormat = `20${parts[2]}-${parts[1]}-${parts[0]}`; // Rearrange the parts into "YYYY/MM/DD" format
+            const mongoDateFormat =
+              parts[2].length == 2
+                ? `20${parts[2]}-${parts[1]}-${parts[0]}`
+                : `${parts[2]}-${parts[1]}-${parts[0]}`; // Rearrange the parts into "YYYY/MM/DD" format
 
             parsedDate = new Date(mongoDateFormat);
 
