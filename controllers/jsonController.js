@@ -104,7 +104,7 @@ class jsonController {
             person_name,
             transaction_id,
           });
-          await Json.save();
+          if (amount) await Json.save();
 
           return {
             amount,
@@ -204,6 +204,12 @@ class jsonController {
         (transaction) => transaction.transaction_type === "credit"
       );
 
+      if (req.query.sort == 1) {
+        const sortByDate = (a, b) => new Date(a.date) - new Date(b.date);
+        debitTransactions.sort(sortByDate);
+        creditTransactions.sort(sortByDate);
+      }
+
       // Extract relevant fields for the output
       const mapTransactionFields = (transactions) =>
         transactions.map(({ date, amount }) => ({ date, amount }));
@@ -212,6 +218,59 @@ class jsonController {
       const output = {
         debit: mapTransactionFields(debitTransactions),
         credit: mapTransactionFields(creditTransactions),
+      };
+
+      res.json(output);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  };
+  static getCurrmonth = async (req, res) => {
+    try {
+      // Fetch all transactions from the database
+      const allTransactions = await JsonModel.find();
+
+      const debitTransactions = allTransactions.filter(
+        (transaction) => transaction.transaction_type === "debit"
+      );
+      const creditTransactions = allTransactions.filter(
+        (transaction) => transaction.transaction_type === "credit"
+      );
+      // Filter transactions for the current month
+      const currentMonth = new Date().getMonth() + 1; // Months are 0-indexed in JavaScript
+      const currentYear = new Date().getFullYear();
+
+      const currentMonthTransactionsDebit = debitTransactions.filter(
+        (transaction) => {
+          const transactionDate = new Date(transaction.date);
+          return (
+            transactionDate.getMonth() + 1 === currentMonth &&
+            transactionDate.getFullYear() === currentYear
+          );
+        }
+      );
+      const currentMonthTransactionsCredit = creditTransactions.filter(
+        (transaction) => {
+          const transactionDate = new Date(transaction.date);
+          return (
+            transactionDate.getMonth() + 1 === currentMonth &&
+            transactionDate.getFullYear() === currentYear
+          );
+        }
+      );
+
+      // Extract relevant fields for the output
+      const mapTransactionFields = (transactions) =>
+        transactions.map(({ date, amount }) => ({ date, amount }));
+
+      const sortByDate = (a, b) => new Date(a.date) - new Date(b.date);
+      currentMonthTransactionsDebit.sort(sortByDate);
+      currentMonthTransactionsCredit.sort(sortByDate);
+      // Create the desired output
+      const output = {
+        debit: mapTransactionFields(currentMonthTransactionsDebit),
+        credit: mapTransactionFields(currentMonthTransactionsCredit),
       };
 
       res.json(output);

@@ -8,4 +8,5 @@ router.post("/json", jsonController.createJson);
 router.get("/total", jsonController.getTotal);
 router.get("/fetchAll", jsonController.fetchAllTransactions);
 router.get("/fetchDateTotal", jsonController.getDateWiseTotal);
+router.get("/currmonth", jsonController.getCurrmonth);
 module.exports = router;
