@@ -69,7 +69,7 @@ class jsonController {
           console.log(txnObj);
 
           // // Extracted fields from the ChatGPT response (dummy values, replace with actual logic)
-          const amount = txnObj.amount;
+          const amount = txnObj?.amount?.replace(",", "");
           const date = txnObj.date;
           const account_number = txnObj.account_number;
           let transaction_type = txnObj.transaction_type;
@@ -287,6 +287,60 @@ class jsonController {
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Internal Server Error" });
+    }
+  };
+  static getMonthTotal = async (req, res) => {
+    try {
+      const today = new Date();
+      const firstDayOfMonth = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        1
+      );
+      const lastDayOfMonth = new Date(
+        today.getFullYear(),
+        today.getMonth() + 1,
+        0
+      );
+
+      const total = await JsonModel.aggregate([
+        {
+          $match: {
+            date: {
+              $gte: firstDayOfMonth,
+              $lte: lastDayOfMonth,
+            },
+          },
+        },
+        {
+          $group: {
+            _id: "$transaction_type",
+            total: {
+              $sum: {
+                $toDouble: {
+                  $replaceAll: {
+                    input: "$amount",
+                    find: ",",
+                    replacement: "",
+                  },
+                },
+              },
+            },
+          },
+        },
+      ]);
+
+      const creditTotal = total.find((item) => item._id === "credit") || {
+        total: 0,
+      };
+      const debitTotal = total.find((item) => item._id === "debit") || {
+        total: 0,
+      };
+
+      res.json({ credit: creditTotal.total, debit: debitTotal.total });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Something went wrong" });
     }
   };
 }
