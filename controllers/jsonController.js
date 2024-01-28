@@ -138,12 +138,19 @@ class jsonController {
             _id: "$transaction_type",
             total: {
               $sum: {
-                $toDouble: "$amount",
+                $toDouble: {
+                  $replaceAll: {
+                    input: "$amount",
+                    find: ",",
+                    replacement: "",
+                  },
+                },
               },
             },
           },
         },
       ]);
+
       const creditTotal = total.find((item) => item._id === "credit") || {
         total: 0,
       };
